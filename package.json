@@ -1,0 +1,31 @@
+{
+    "name": "music",
+    "version": "1.0.0",
+    "main": "index.js",
+    "repository": "",
+    "author": "quangtm210395 <quangtmse04402@fpt.edu.vn>",
+    "license": "MIT",
+    "dependencies": {
+      "async": "^2.4.0",
+      "axios": "^0.16.1",
+      "body-parser": "^1.17.1",
+      "composable-middleware": "^0.3.0",
+      "crypto": "0.0.3",
+      "express": "^4.15.3",
+      "jquery": "^3.2.1",
+      "jsonwebtoken": "^7.4.1",
+      "mongoose": "^4.9.9",
+      "uuid": "^3.0.1"
+    },
+    "devDependencies": {
+      "nodemon": "^1.11.0"
+    },
+    "scripts": {
+      "postinstall": "",
+  
+      "dev": "nodemon --watch ../* index.js",
+  
+      "prestart": "npm install",
+      "start": "node index.js"
+    }
+  }
