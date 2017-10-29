@@ -19,10 +19,7 @@ module.exports = {
                 username: req.body.username.toLowerCase(),
                 password: req.body.password,
                 name: req.body.name,
-                email: req.body.email,
-                gender: req.body.gender,
-                dob: req.body.dob,
-                imgUrl: (req.body.imgUrl.trim() === "") ? "imgs/user_male_df.png" : req.body.imgUrl.trim()
+                email: req.body.email
             });
         } catch (e) {
 
@@ -47,16 +44,19 @@ module.exports = {
     },
 
     getUser: function (req, res) {
+        if (!req.params.id) {
+            res.json({status:false, message:'Can not find user with id '+req.params.id});
+        }
         User.findOne({_id: req.params.id}, '-__v -salt -password')
             .exec(function (err, user) {
-                if (err) res.json({status: false, message: err});
-                if (user) {
+                if (err)
+                    res.json({status: false, message: err});
+                else if (user) {
                     res.json({status: true, data: user});
                 } else {
                     res.json({status: false, message: "Tài khoản chưa tồn tại."});
                 }
             });
-
     },
 
     login: function (req, res) {
@@ -101,7 +101,10 @@ module.exports = {
     getAll: function (req, res) {
         User.find().select("_id username name").lean()
             .exec(function (err, users) {
-                res.json(users);
+                if (err) {
+                    res.json({status: false, message: 'Lỗi hệ thống, xin vui lòng chờ khắc phục.'});
+                }
+                res.json({status: true, message: 'Ahihi', data: users});
             });
     },
 
