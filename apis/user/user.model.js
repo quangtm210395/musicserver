@@ -23,7 +23,8 @@ var user = mongoose.Schema({
     salt: String,
     email: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     }
 });
 
@@ -144,7 +145,7 @@ user.methods = {
         var defaultKeyLength = 64;
         var salt = new Buffer(this.salt, 'base64');
         if (!callback) {
-            return crypto.pbkdf2Sync(password, salt, defaultIterations, defaultKeyLength)
+            return crypto.pbkdf2Sync(password, salt, defaultIterations, defaultKeyLength, 'DSA')
                 .toString('base64');
         }
         return crypto.pbkdf2(password, salt, defaultIterations, defaultKeyLength, function (err, key) {

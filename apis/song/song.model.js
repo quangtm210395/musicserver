@@ -2,11 +2,11 @@
 var mongoose = require('mongoose');
 
 var song = mongoose.Schema({
-    songname: {
+    name: {
         type: String,
         required: true
     },
-    path: {
+    url: {
         type: String,
         required: true
     },
@@ -18,7 +18,10 @@ var song = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Album'
     },
-    imgUrl: {
+    thumbnail: {
+        type: String
+    },
+    flag : {
         type: String
     }
 });

@@ -6,6 +6,10 @@ var playlist = mongoose.Schema({
         type: String,
         required: true
     },
+    listsong: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Song'
+    }],
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
