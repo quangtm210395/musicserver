@@ -8,7 +8,7 @@ module.exports = {
             .find()
             .select("_id name")
             .populate({path: 'listsong', select: '-album'})
-            .populate({path: 'createdBy', select: ''})
+            .populate({path: 'createdBy', select: '-salt -password'})
             .lean()
             .exec(function (err, users) {
                 if (err) {
@@ -45,6 +45,20 @@ module.exports = {
                     return;
                 }
                 res.json({status: true, message: 'Delete playlist successful.'});
+            });
+    },
+    getPlaylistByUser: function (req, res) {
+        var user = req.user;
+        Playlist
+            .find({createdBy: user._id})
+            .populate({path: 'createdBy', select: '-salt -password'})
+            .populate({path: 'listsong', populate: {path: 'artist'}})
+            .exec(function(err, playlists) {
+                if (err) {
+                    res.json({status:false, message: err.message});
+                    return;
+                }
+                res.json({status: true, message: 'All playlist of '+ user.name, playlists: playlists});
             });
     }
 }
