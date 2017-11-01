@@ -8,8 +8,8 @@ var compose = require('composable-middleware');
 module.exports = {
     authentication: function () {
         return compose().use(function (req, res, next) {
-            if (req.query.token || req.headers.token) {
-                let token = req.query.token || req.headers.token;
+            if (req.body.token || req.headers.token) {
+                let token = req.body.token || req.headers.token;
                 jwt
                     .verify(token, config.secret, function (err, decoded) {
                         if (err) 
