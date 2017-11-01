@@ -92,7 +92,7 @@ module.exports = {
             });
         else {
             if (req.body.playlistName) {
-                var newPlaylist = new Playlist({name: req.body.playlistName});
+                var newPlaylist = new Playlist({name: req.body.playlistName, createdBy: req.user._id});
                 newPlaylist.save(function (err, savedPlaylist) {
                     Artist
                         .findOne({name: req.body.song.artist.name})
