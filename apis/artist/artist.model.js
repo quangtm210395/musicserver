@@ -4,8 +4,7 @@ var mongoose = require('mongoose');
 var artist = mongoose.Schema({
     name: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     age: {
         type: Number
