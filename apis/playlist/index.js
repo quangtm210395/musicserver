@@ -8,7 +8,8 @@ var Auth = require('../auth/auth.service');
 router.get('/', PlaylistController.getAll);
 router.post('/add', Auth.authentication(), PlaylistController.add);
 router.post('/getPlaylistByUser', Auth.authentication(), PlaylistController.getPlaylistByUser);
-// router.post('/addPlaylistWithSong', Auth.authentication(), PlaylistController.addPlaylistWithSong);
+router.post('/syncPlaylist', Auth.authentication(), PlaylistController.syncPlaylist);
 router.put('/remove', Auth.authentication(), PlaylistController.remove);
+router.post('/rename', Auth.authentication(), PlaylistController.rename);
 
 module.exports = router;

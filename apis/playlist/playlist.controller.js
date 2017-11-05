@@ -4,6 +4,7 @@ var Song = require('../song/song.model');
 var Artist = require('../artist/artist.model');
 var common = require('../../common/index');
 const async = require('async');
+const _ = require('underscore');
 
 module.exports = {
     getAll: function(req, res) {
@@ -51,21 +52,36 @@ module.exports = {
                 res.json({status: true, message: 'Delete playlist successful.'});
             });
     },
+    rename : function (req, res) {
+        if (!req.body.playlistId || !req.body.playlistName) {
+            res.json({status: false, message: "Rename failed."});
+            return;
+        }
+        Playlist
+            .findByIdAndUpdate(req.body.playlistId, {name: req.body.playlistName})
+            .exec(function(err, data) {
+                if (err) {
+                    res.json({status:false, message: err.message});
+                    return;
+                }
+                res.json({status: true, message: 'Rename playlist successful.'});
+            });
+    },
     getPlaylistByUser: function (req, res) {
         var user = req.user;
         Playlist
             .find({createdBy: user._id})
             .populate({path: 'createdBy', select: '-salt -password'})
-            .populate({path: 'listsong', populate: {path: 'artist'}})
+            .populate({path: 'listsong', select: ''})
             .exec(function(err, playlists) {
                 if (err) {
                     res.json({status:false, message: err.message});
                     return;
                 }
-                res.json({status: true, message: 'All playlist of '+ user.name, playlists: playlists});
+                res.json({status: true, message: 'Synced playlists successful', playlists: playlists});
             });
     },
-    addPlaylistWithSong: function (req, res) {
+    syncPlaylist: function (req, res) {
         this.return = function() {
             return;
         }
@@ -76,59 +92,81 @@ module.exports = {
         }
         var playlists = req.body.playlists;
         playlists.forEach(function(playlist, index) {
-            var newPlaylist = new Playlist({name: playlist.name});
-            newPlaylist.save(function(err, savedPlaylist) {
-                if (err) {
-                    res.json({status: false, message: err.message});
-                    return;
-                }
-                playlist.songs.forEach(function(song, idx) {
-                    var error = null;
-                    if (error) {
-                        res.json({status: false, message: error.message});
+            if (!playlist._id) {
+                var newPlaylist = new Playlist({name: playlist.name, createdBy: req.user._id});
+                newPlaylist.save(function(err, savedPlaylist) {
+                    if (err) {
+                        res.json({status: false, message: err.message});
                         return;
                     }
-                    var that2 = this;
-                    if (song.artist) {
-                        var newArtist = new Artist(song.artist);
-                        newArtist.save(function(err2, savedArtist) {
-                            if (err2) {
-                                error = err2;
-                                res.json({status: false, message: err2.message});
-                                return;
-                            } else {
-                                let newSongScheme = song;
-                                newSongScheme.artist = savedArtist._id;
-                                let newSong = new Song(newSongScheme);
-                                newSong.save(function(err, savedSong) {
-                                    if (err) {
-                                        error = err;
-                                        return;
-                                    } else {
-                                        Playlist.findByIdAndUpdate(savedPlaylist._id, {$push: {listsong: savedSong._id}});
-                                        if (index == playlists.length - 1 && idx == playlist.songs.length - 1) {
-                                            res.json({status: true, message: 'Synced playlists successful'});
-                                        }
-                                    }
-                                });
-                            }
-                        });
-                    } else {
+                    playlist.songs.forEach(function(song, idx) {
+                        var that2 = this;
                         let newSong = new Song(song);
                         newSong.save(function(err, savedSong) {
                             if (err) {
                                 res.json({status: false, message: err.message});
                                 return;
                             }
-                            Playlist.findByIdAndUpdate(savedPlaylist._id, {$push: {listsong: savedSong._id}});
-                            if (index == playlists.length - 1 && idx == playlist.songs.length - 1) {
-                                res.json({status: true, message: 'Synced playlists successful'});
-                            }
+                            Playlist.findByIdAndUpdate(savedPlaylist._id, {$push: {listsong: savedSong._id}})
+                                .exec(function(err2) {
+                                    if (err2) {
+                                        res.json({status: false, message: err2.message});
+                                        return;
+                                    }
+                                    if (index == playlists.length - 1 && idx == playlist.songs.length - 1) {
+                                        var user = req.user;
+                                        Playlist
+                                            .find({createdBy: user._id})
+                                            .populate({path: 'createdBy', select: '-salt -password'})
+                                            .populate({path: 'listsong', select: ''})
+                                            .exec(function(err, playlists) {
+                                                if (err) {
+                                                    res.json({status:false, message: err.message});
+                                                    return;
+                                                }
+                                                res.json({status: true, message: 'Synced playlists successful', playlists: playlists});
+                                            });
+                                    }
+                                });
                         });
-                    }
+                    });
                 });
-            });
+            } else {
+                var songs = _.filter(playlist.songs, function(song) {
+                    return !song._id;
+                });
+                console.log(songs);
+                songs.forEach(function(song, idx) {
+                    let newSong = new Song(song);
+                    newSong.save(function(err, savedSong) {
+                        if (err) {
+                            res.json({status: false, message: err.message});
+                            return;
+                        }
+                        Playlist.findByIdAndUpdate(playlist._id, {$push: {listsong: savedSong._id}})
+                            .exec(function(err2) {
+                                if (err2) {
+                                    res.json({status: false, message: err2.message});
+                                    return;
+                                }
+                                if (index == playlists.length - 1 && idx == playlist.songs.length - 1) {
+                                    var user = req.user;
+                                    Playlist
+                                        .find({createdBy: user._id})
+                                        .populate({path: 'createdBy', select: '-salt -password'})
+                                        .populate({path: 'listsong', select: ''})
+                                        .exec(function(err, playlists) {
+                                            if (err) {
+                                                res.json({status:false, message: err.message});
+                                                return;
+                                            }
+                                            res.json({status: true, message: 'Synced playlists successful', playlists: playlists});
+                                        });
+                                }
+                            });
+                    });
+                });
+            }
         });
-        
     }
 }

@@ -7,6 +7,6 @@ var Auth = require('../auth/auth.service');
 
 router.get('/', SongController.getAll);
 router.post('/addToPlaylist', Auth.authentication(), SongController.addToPlaylist);
-router.put('/removeFromPlaylist', SongController.removeFromPlaylist);
+router.put('/removeFromPlaylist', Auth.authentication(), SongController.removeFromPlaylist);
 
 module.exports = router;

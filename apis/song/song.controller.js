@@ -2,8 +2,8 @@ var Song = require('./song.model');
 var Playlist = require('../playlist/playlist.model');
 var Artist = require('../artist/artist.model');
 var common = require('../../common/index');
-function addNewSong(req, res, artist, playlist) {
-    let newflag = common.makeFlag(req.body.song.name, artist.name);
+function addNewSong(req, res, playlist) {
+    let newflag = common.makeFlag(req.body.song.name, req.body.song.artist);
     Song
         .findOne({flag: newflag})
         .exec(function (err, song) {
@@ -13,7 +13,6 @@ function addNewSong(req, res, artist, playlist) {
             }
             if (!song) {
                 var newSongScheme = req.body.song;
-                newSongScheme.artist = artist._id;
                 newSongScheme.flag = newflag;
                 var newSong = new Song(newSongScheme);
                 newSong.save(function (err3, data) {
@@ -68,52 +67,18 @@ module.exports = {
                     return;
                 }
                 if (playlist) {
-                    Artist
-                        .findOne({name: req.body.song.artist.name})
-                        .exec(function (err, artist) {
-                            if (err) {
-                                res.json({status: false, message: err.message});
-                                return;
-                            }
-                            if (!artist) {
-                                var newArtist = new Artist({name: req.body.song.artist.name});
-                                newArtist.save(function (err1, savedArtist) {
-                                    if (err1) {
-                                        res.json({status: false, message: err1.message});
-                                        return;
-                                    }
-                                    addNewSong(req, res, savedArtist, playlist)
-                                });
-                            } else {
-                                addNewSong(req, res, artist, playlist)
-                            }
-                        });
+                    addNewSong(req, res, playlist);
                 }
             });
         else {
             if (req.body.playlistName) {
                 var newPlaylist = new Playlist({name: req.body.playlistName, createdBy: req.user._id});
                 newPlaylist.save(function (err, savedPlaylist) {
-                    Artist
-                        .findOne({name: req.body.song.artist.name})
-                        .exec(function (err, artist) {
-                            if (err) {
-                                res.json({status: false, message: err.message});
-                                return;
-                            }
-                            if (!artist) {
-                                var newArtist = new Artist({name: req.body.song.artist.name});
-                                newArtist.save(function (err1, savedArtist) {
-                                    if (err1) {
-                                        res.json({status: false, message: err1.message});
-                                        return;
-                                    }
-                                    addNewSong(req, res, savedArtist, savedPlaylist);
-                                });
-                            } else {
-                                addNewSong(req, res, artist, savedPlaylist);
-                            }
-                        });
+                    if (err) {
+                        res.json({status: false, message: err.message});
+                        return;
+                    }
+                    addNewSong(req, res, savedPlaylist);
                 })
             }
         }

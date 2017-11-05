@@ -15,6 +15,7 @@
     "jquery": "^3.2.1",
     "jsonwebtoken": "^7.4.1",
     "mongoose": "^4.9.9",
+    "underscore": "^1.8.3",
     "uuid": "^3.0.1"
   },
   "devDependencies": {

@@ -11,8 +11,7 @@ var song = mongoose.Schema({
         required: true
     },
     artist: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Artist'
+        type: String
     },
     album: {
         type: mongoose.Schema.Types.ObjectId,
