@@ -20,24 +20,40 @@ function addNewSong(req, res, playlist) {
                         res.json({status: false, message: err3.message});
                         return;
                     }
-                    Playlist.findOneAndUpdate({
-                        _id: playlist._id
-                    }, {
+                    Playlist.findByIdAndUpdate(
+                        playlist._id
+                    , {
                         $push: {
                             listsong: data
                         }
-                    }).exec();
+                    }, {
+                        new: true
+                    }).exec(function(err, updatedPlaylist) {
+                        if (err) {
+                            res.json({status: false, message: err.message});
+                            return;
+                        }
+                        res.json({status: true, message: 'Added song successsful.', playlist: updatedPlaylist, song: {_id: data._id}});
+                    });
                 });
             } else {
-                Playlist.findOneAndUpdate({
+                Playlist.findByIdAndUpdate({
                     _id: playlist._id
                 }, {
                     $push: {
                         listsong: song
                     }
-                }).exec();
+                }, {
+                    new: true
+                }).exec(function(err, updatedPlaylist) {
+                    if (err) {
+                        res.json({status: false, message: err.message});
+                        return;
+                    }
+                    res.json({status: true, message: 'Added song successsful.', playlist: updatedPlaylist, song: {_id: song._id}});
+                });
             }
-            res.json({status: true, message: 'Added song successsful.'});
+            
         });
 };
 
